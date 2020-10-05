@@ -33,7 +33,7 @@ export function MathOperation(props) {
       id={id}
       value={value}
       key={value}
-      onClick={() => onClick()}
+      onClick={()=>onClick(value)}
     >
       {' '}
       {value}

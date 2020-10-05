@@ -11,6 +11,7 @@ function DigitButton(props) {
       id={value === '=' ? 'equal' : value === '.' ? 'dot' : `digit_${value}`}
     >
       {value}
+
     </button>
   );
 }

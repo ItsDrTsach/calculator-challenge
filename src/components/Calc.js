@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { MathOperation, operationTypes } from './MathOperation';
 import DigitButton from './DigitButton';
 
@@ -9,6 +9,7 @@ import DigitButton from './DigitButton';
  * @param {*} num2 The second num to use in the calculation
  */
 function calculate(operation, num1, num2 = 0) {
+  // eslint-disable-next-line default-case
   switch (operation) {
     case '+':
       return num1 + num2;
@@ -21,60 +22,108 @@ function calculate(operation, num1, num2 = 0) {
     case '%':
       return num1 % num2;
     case 'x²':
-      return Math.pow(num1, num2);
+      return Math.pow(num1,2);
     case 'sqrt':
       return Math.sqrt(num1);
   }
 }
 
 function Calc() {
-  /**
-   * Add (0-9) to <DigitButton /> with value and onClick function as exlplained in the requirements
-   * Add the correct types to MathOperation, if you are having problem make sure its written correctly compared to operationTypes array
-   * This is a state machine, you'll need to work wisely with React.js State and Lifecycle functionality
-   * You can use calculate function for your aid
-   */
-  const [firstNum, setFirstNum ] = useState(null);
-  const [secondNum, setSecondNum ] = useState(null);
-  const [operation, setOperation] = useState(null)
-  const [result, setResult] = useState(0)
-  console.log(firstNum);
-  console.log(operation);
-  console.log(secondNum);
-  console.log(result);
-  const handleDigitClick = (value) => {
-      firstNum && operation? setSecondNum(value) : setFirstNum(value)
+const [ display, setDisplay ] = useState(0);
+const [ firstNumber, setFirstNumber] = useState(null);
+const [ secondNumber, setSecondNumber] = useState(null);
+const [ operation, setOperation] = useState(null);
+const [result, setResult] = useState(null);
+useEffect(() => {
+  if(result){
+    setDisplay(result);
+    return;
+
+  }
+  if(firstNumber){
+    if(operation){
+      if(secondNumber){
+        setDisplay(secondNumber)
+      }else{
+        setDisplay(operation)
+      }
+    }else{
+      setDisplay(firstNumber)
+    }
+
+  }else{
+    setDisplay(0)
+  }
+}, [result,firstNumber, operation, secondNumber])
+
+
+  console.table({firstNumber,operation,secondNumber,result,display})
+// // handlers//
+  const handleDigitClick = (number) => {
+    if(!operation){
+      setFirstNumber(prev => {
+        if(prev){
+          let answer = number === "." ? prev.toString() +'.': Number(prev.toString() + number.toString());
+          return answer;
+        }
+        return number;
+      })
+    }else{
+      setSecondNumber(prev => {
+        if(prev){
+          let answer = number === "." ? prev.toString() +'.': Number(prev.toString() + number.toString());
+          return answer;
+        }
+        return number;
+      })
+    }
   }
   const handleOperationClick = (value) => {
-    if(value ==="="){
-      if(secondNum){
-        if(operation==="/" && secondNum===0){
-          return console.log('cannot devide by 0')
-        }
-        console.table({operation,firstNum,secondNum})
-        const answer = calculate(operation,firstNum,secondNum)
-        setResult(answer)
-      }
-
+    if(operation && firstNumber && secondNumber){
+        setFirstNumber(calculate(operation,firstNumber, secondNumber));
+        setSecondNumber(null);
     }
-    if(value ==="AC"){
-      setFirstNum(null);
-      setOperation(null);
-      setSecondNum(null);
-      setResult(0);
+    let result;
+    switch (value) {
+      case 'AC':
+        setFirstNumber(null);
+        setSecondNumber(null);
+        setOperation(null);
+        setResult(null);
+        setDisplay(0);
+        break;
+      case 'x²':
+        result = calculate("x²", firstNumber);
+        setResult(result);
+        setFirstNumber(result)
+        setOperation(null)
+        break;
+      case '√':
+        result = calculate("sqrt",firstNumber, secondNumber);
+        setResult(result);
+        setFirstNumber(result)
+        setOperation(null)
+        break;
+      default:
+        setOperation(value)
+        break;
     }
-    if (firstNum){
-      return setOperation(value)
-    }
-    console.log('enter first number first')
   }
-  const handleSubmit = () => {
-
+  const handleEqualClick = () => {
+    console.log('===========================')
+    if(operation==='/' && secondNumber===0){
+      return setResult('Error')
+    }
+    const result =calculate(operation,firstNumber, secondNumber);
+    setResult(result);
+    setFirstNumber(result);
+    setOperation(null);
+    setSecondNumber(null);
   }
   return (
     <div className='calculator'>
       <div className='result'>
-        {result}
+        {display}
       </div>
       <div className='calculator-digits'>
           <MathOperation type="sqrt" onClick={handleOperationClick}/>
@@ -85,8 +134,8 @@ function Calc() {
           <MathOperation type="multi" onClick={handleOperationClick}/>
           <MathOperation type="divide" onClick={handleOperationClick}/>
           <MathOperation type="AC" onClick={handleOperationClick}/>
-          <MathOperation type="equal" onClick={handleOperationClick}/>
-          <MathOperation type="dot" onClick={handleOperationClick}/>
+          <MathOperation type="equal" onClick={handleEqualClick}/>
+          <DigitButton value={'.'} onClick={()=>handleDigitClick('.')}/>
           <DigitButton value={1} onClick={()=>handleDigitClick(1)}/>
           <DigitButton value={2} onClick={()=>handleDigitClick(2)}/>
           <DigitButton value={3} onClick={()=>handleDigitClick(3)}/>

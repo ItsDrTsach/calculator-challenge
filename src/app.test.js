@@ -11,7 +11,8 @@ function calculate(operation, num1, num2 = 0) {
     case 'multi':
       return num1 * num2;
     case 'divide':
-      return num1 / num2;
+      const ans = num1 / num2;
+      return ans == Infinity ? NaN : ans;
     case 'modulo':
       return num1 % num2;
     case 'power':
@@ -69,11 +70,12 @@ describe(`${projectName} - test suite`, () => {
 
       const num1 = Math.floor(Math.random() * 10);
       const num2 = Math.floor(Math.random() * 10);
+      const num3 = Math.floor(Math.random() * 9) + 1;
 
       await page.click(`#digit_${num1}`);
       await page.click(`#digit_${num2}`);
       await page.click(`#op_${test}`);
-      await page.click(`#digit_${num1}`);
+      await page.click(`#digit_${num3}`);
       await page.click('#equal');
 
       const result = await page.$('.result');
@@ -81,7 +83,7 @@ describe(`${projectName} - test suite`, () => {
         await result.getProperty('innerText')
       ).jsonValue();
       expect(Number(resultsValue)).toBe(
-        calculate(test, num1 * 10 + num2, num1)
+        calculate(test, num1 * 10 + num2, num3)
       );
     });
   });
@@ -92,7 +94,7 @@ describe(`${projectName} - test suite`, () => {
 
       const num1 = Math.floor(Math.random() * 10);
       const num2 = Math.floor(Math.random() * 10);
-      const num3 = Math.floor(Math.random() * 10);
+      const num3 = Math.floor(Math.random() * 9) + 1;
 
       await page.click(`#digit_${num1}`);
       await page.click('#dot');
@@ -132,6 +134,37 @@ describe(`${projectName} - test suite`, () => {
       await result.getProperty('innerText')
     ).jsonValue();
     expect(resultsValue).toBe('0');
+  });
+
+  it(`Complicated exercise`, async () => {
+    await page.goto('http://localhost:3000/', { waitUntil: 'networkidle0' });
+    await page.click('#digit_5');
+    await page.click('#op_minus');
+    await page.click('#digit_7');
+    await page.click('#equal');
+    await page.click('#op_power');
+    await page.click('#op_power');
+    await page.click('#op_divide');
+    await page.click('#digit_2');
+    await page.click('#equal');
+    await page.click('#op_plus');
+    await page.click('#digit_1');
+    await page.click('#digit_7');
+    await page.click('#equal');
+    await page.click('#op_sqrt');
+    await page.click('#op_modulo');
+    await page.click('#digit_4');
+    await page.click('#op_multi');
+    await page.click('#digit_4');
+    await page.click('#equal');
+    await page.click('#op_multi');
+    await page.click('#digit_2');
+    await page.click('#equal');
+    const result = await page.$('.result');
+    const resultsValue = await (
+      await result.getProperty('innerText')
+    ).jsonValue();
+    expect(resultsValue).toBe('8');
   });
 
   it('Can delete', async () => {

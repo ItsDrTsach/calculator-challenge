@@ -1,0 +1,5 @@
+name: Testing For Pull Requests
+
+on:
+  pull_request:
+    branches: [master]
